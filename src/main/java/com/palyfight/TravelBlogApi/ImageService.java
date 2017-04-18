@@ -1,33 +1,77 @@
 package com.palyfight.TravelBlogApi;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.tinify.Source;
+import com.tinify.Tinify;
 
 public class ImageService {
 	private Logger logger = Logger.getLogger(ImageService.class);
 	private Cloudinary cloudinary;
-	
-	ImageService(){
-		if(this.cloudinary == null){
-			this.cloudinary = new Cloudinary(ObjectUtils.asMap(
-					  "cloud_name", System.getenv("CLOUD_NAME"),
-					  "api_key", System.getenv("CLOUDINARY_API_KEY"),
-					  "api_secret", System.getenv("CLOUDINARY_API_SECRET")));
+
+	ImageService() {
+		Tinify.setKey(System.getenv("TINY_API_KEY"));
+		
+		if (this.cloudinary == null) {
+			this.cloudinary = new Cloudinary(ObjectUtils.asMap("cloud_name", System.getenv("CLOUD_NAME"), "api_key",
+					System.getenv("CLOUDINARY_API_KEY"), "api_secret", System.getenv("CLOUDINARY_API_SECRET")));
 		}
 	}
-	
-	public String upload(String path){
+
+	public String upload(String path) {
 		String secureUrl = "";
 		try {
 			Map<?, ?> uploadResult = cloudinary.uploader().upload(path, ObjectUtils.emptyMap());
 			secureUrl = uploadResult.get("secure_url").toString();
 		} catch (IOException e) {
-			logger.log(Level.ERROR, "A problem occurred during the uploading. " + e.getMessage());
+			logger.log(Level.ERROR, "A problem occurred during the uploading from a url. " + e.getMessage());
 		}
 		return secureUrl;
+	}
+
+	public String upload(File file) {
+		String secureUrl = "";
+		try {
+			Map<?, ?> uploadResult = cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
+			secureUrl = uploadResult.get("secure_url").toString();
+		} catch (IOException e) {
+			logger.log(Level.ERROR, "A problem occurred during the uploading from a local file. " + e.getMessage());
+		}
+		return secureUrl;
+	}
+
+	public String compress(String path, int from) {
+		String compressedUrl = "";
+		Source source = null;
+		
+		switch (from) {
+		case 1: // local file
+			try {
+				source = Tinify.fromFile(path);
+			} catch (IOException e) {
+				logger.log(Level.ERROR, "Could not locate the specified file at this location: " + path + "\n\n" + e.getMessage());
+			}
+			break;
+		case 2: // file from url
+			source = Tinify.fromUrl(path);
+			break;
+		}
+		
+		try {
+			source.toFile("compressed.jpg");
+		} catch (IOException e) {
+			logger.log(Level.ERROR, "Could not save the compressed image. " + e.getMessage());
+		}
+		
+		if(source != null){
+			File file = new File("compressed.jpg");
+			compressedUrl = upload(file);
+		}
+		return compressedUrl;
 	}
 }

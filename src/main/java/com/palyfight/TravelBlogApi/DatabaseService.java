@@ -26,9 +26,9 @@ public class DatabaseService {
 		}
 	}
 	
-	public void save(String url, String category){
+	public void save(String url1, String url2, String category){
 		MongoCollection<Document> images = db.getCollection("PalyTravelCollection");
-		Document image = new Document("url", url).append("category", category);
+		Document image = new Document("url", url1).append("compressedUrl", url2).append("category", category);
 		images.insertOne(image);
 		
 		client.close();
