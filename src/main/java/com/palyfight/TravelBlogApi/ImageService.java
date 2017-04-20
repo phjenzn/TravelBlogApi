@@ -7,6 +7,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.tinify.Options;
 import com.tinify.Source;
 import com.tinify.Tinify;
 
@@ -30,6 +31,8 @@ public class ImageService {
 			secureUrl = uploadResult.get("secure_url").toString();
 		} catch (IOException e) {
 			logger.log(Level.ERROR, "A problem occurred during the uploading from a url. " + e.getMessage());
+		} finally {
+			System.out.println("Successfully uploaded image from: " + path + " to cloudinary!!!");
 		}
 		return secureUrl;
 	}
@@ -41,6 +44,8 @@ public class ImageService {
 			secureUrl = uploadResult.get("secure_url").toString();
 		} catch (IOException e) {
 			logger.log(Level.ERROR, "A problem occurred during the uploading from a local file. " + e.getMessage());
+		} finally {
+			System.out.println("Successfully uploaded image from: " + file.getPath() + " to cloudinary!!!");
 		}
 		return secureUrl;
 	}
@@ -63,9 +68,13 @@ public class ImageService {
 		}
 		
 		try {
-			source.toFile("compressed.jpg");
+			Options options = new Options().with("method", "cover").with("width", 475.5).with("height", 400);
+			Source resized = source.resize(options);
+			resized.toFile("compressed.jpg");
 		} catch (IOException e) {
 			logger.log(Level.ERROR, "Could not save the compressed image. " + e.getMessage());
+		} finally {
+			System.out.println("Successfully compressed image from: " + path + " thanks to Tinify!!!");
 		}
 		
 		if(source != null){
