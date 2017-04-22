@@ -27,9 +27,9 @@ public class ImageService {
 	public String upload(String path) {
 		String secureUrl = "";
 		try {
-			Map<?, ?> uploadResult = cloudinary.uploader().upload(path, ObjectUtils.emptyMap());
+			Map<?, ?> uploadResult = cloudinary.uploader().upload(path, ObjectUtils.emptyMap()); // Max file size you can upload is: 10485760
 			secureUrl = uploadResult.get("secure_url").toString();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.log(Level.ERROR, "A problem occurred during the uploading from a url. " + e.getMessage());
 		} finally {
 			System.out.println("Successfully uploaded image from: " + path + " to cloudinary!!!");
@@ -42,7 +42,7 @@ public class ImageService {
 		try {
 			Map<?, ?> uploadResult = cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
 			secureUrl = uploadResult.get("secure_url").toString();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.log(Level.ERROR, "A problem occurred during the uploading from a local file. " + e.getMessage());
 		} finally {
 			System.out.println("Successfully uploaded image from: " + file.getPath() + " to cloudinary!!!");
@@ -58,7 +58,7 @@ public class ImageService {
 		case 1: // local file
 			try {
 				source = Tinify.fromFile(path);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				logger.log(Level.ERROR, "Could not locate the specified file at this location: " + path + "\n\n" + e.getMessage());
 			}
 			break;
@@ -71,7 +71,7 @@ public class ImageService {
 			Options options = new Options().with("method", "cover").with("width", 475.5).with("height", 400);
 			Source resized = source.resize(options);
 			resized.toFile("compressed.jpg");
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.log(Level.ERROR, "Could not save the compressed image. " + e.getMessage());
 		} finally {
 			System.out.println("Successfully compressed image from: " + path + " thanks to Tinify!!!");
