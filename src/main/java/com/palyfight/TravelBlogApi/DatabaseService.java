@@ -1,8 +1,12 @@
 package com.palyfight.TravelBlogApi;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bson.Document;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
@@ -42,5 +46,29 @@ public class DatabaseService {
 		JsonArray obj = (new JsonParser()).parse(results).getAsJsonArray();
 		client.close();
 		return obj;
+	}
+	
+	public JsonArray getTripsPics(){
+		BasicDBObject whereQuery = new BasicDBObject();
+		whereQuery.put("tag", "main");
+		MongoCollection<Document> images = db.getCollection("PalyTravelCollection");
+		String results = JSON.serialize(images.find(whereQuery));
+		JsonArray pics = (new JsonParser()).parse(results).getAsJsonArray();
+		client.close();
+		return pics;
+	}
+	
+	public JsonArray getPicsByTrip(String trip){
+		BasicDBObject andQuery = new BasicDBObject();
+		List<BasicDBObject> obj = new ArrayList<BasicDBObject>();
+		obj.add(new BasicDBObject("tag", "pics"));
+		obj.add(new BasicDBObject("category", trip));
+		andQuery.put("$and", obj);
+		
+		MongoCollection<Document> images = db.getCollection("PalyTravelCollection");
+		String results = JSON.serialize(images.find(andQuery));
+		JsonArray pics = (new JsonParser()).parse(results).getAsJsonArray();
+		client.close();
+		return pics;
 	}
 }
